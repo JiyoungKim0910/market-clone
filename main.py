@@ -59,6 +59,7 @@ async def get_items():
 async def get_image(item_id):
     cur.execute(f"SELECT image FROM items WHERE id={item_id}")
     image_bytes_hex = cur.fetchone()[0]
+    # media_type : 파이썬 버전이 다를경우 버그 발생 방지
     return Response(content=bytes.fromhex(image_bytes_hex),media_type="image/*")
 
 @app.post('/signup')
