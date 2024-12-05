@@ -62,9 +62,15 @@ async def get_image(item_id):
     # media_type : 파이썬 버전이 다를경우 버그 발생 방지
     return Response(content=bytes.fromhex(image_bytes_hex),media_type="image/*")
 
+# 현재 코드는 회원가입 여부를 확인하지 않음
+# 회원 가입 여부 확인 아이디 중복체크 확인 기능 추가 하기
 @app.post('/signup')
-def signup(id:str=Form(), password:str=Form()):
+def signup(id:str=Form(), password:str=Form(), name:str =Form(), email:str=Form()):
     print(id, password)
+    cur.execute(f"""
+                INSERT INTO users(id, name, email, password)
+                VALUES ('{id}','{name}','{email}','{password}')""");
+    conn.commit()
     return 200
 
 

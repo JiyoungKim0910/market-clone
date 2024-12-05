@@ -26,8 +26,12 @@ const handleSubmit = async (e) => {
         });
         const data = await res.json();
         if (data === 200) {
-            div.innerText = '회원가입에 성공했습니다.';
-            div.style.color = 'blue';
+            // div.innerText = '회원가입에 성공했습니다.';
+            // div.style.color = 'blue';
+            alert('회원가입에 성공했습니다.');
+            // alert 는 요즘 잘 사용하지 않음
+            // 토스트 메시지 사용
+            window.location.pathname = "login.html";
         }
     }
 
