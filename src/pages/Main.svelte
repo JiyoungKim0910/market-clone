@@ -1,4 +1,8 @@
 <script>
+	import { onMount } from "svelte";
+	import Footer from "../components/Footer.svelte";
+	import { getDatabase, ref, onValue } from "firebase/database";
+
 	let time = "00:00";
 	const timer = () => {
 		let hour = new Date().getHours().toString().padStart(2, "0");
@@ -7,6 +11,40 @@
 	};
 	timer();
 	setInterval(timer, 60000);
+
+	// 반응형 변수: 이 값이 변동되면 밑에서 랜더링 하는 태그에서 자동으로 업데이트
+	// let을 써도 변경이 되긴 함
+	$: items = [];
+
+	const db = getDatabase();
+	const itemsRef = ref(db, "items/");
+	// onMount : 화면이 랜더링 될 때마다 함수 호출
+	onMount(() => {
+		onValue(itemsRef, (snapshot) => {
+			const data = snapshot.val();
+			items = Object.values(data).reverse();
+			console.log(Object.values(data));
+		});
+	});
+	const calcTime = (timestamp) => {
+		// 한국시간 UTC+9
+		// 9시간 빼주기 밀리세컨즈
+		const now = new Date().getTime() - 9 * 60 * 60 * 1000;
+		const diff = new Date(now - timestamp);
+		const hour = diff.getHours();
+		const min = diff.getMinutes();
+		const sec = diff.getSeconds();
+
+		if (hour > 0) {
+			return `${hour}시간 전`;
+		} else if (min > 0) {
+			return `${min}분 전`;
+		} else if (sec > 0) {
+			return `${sec}초 전`;
+		} else {
+			return "방금 전";
+		}
+	};
 </script>
 
 <header>
@@ -34,41 +72,21 @@
 </header>
 
 <main>
+	{#each items as item}
+		<div class="item-list">
+			<div class="item-list__img">
+				<img src={item.imgUrl} alt={item.title} />
+			</div>
+			<div class="item-list__info">
+				<div class="item-list__info-title">{item.title}</div>
+				<div class="item-list__info-meta">
+					{item.place + " "}{calcTime(item.insertAt)}
+				</div>
+				<div class="item-list__info-price">{item.price}</div>
+			</div>
+		</div>
+	{/each}
 	<a class="write-btn" href="#/write">+글쓰기</a>
 </main>
-
-<footer>
-	<div class="footer-block">
-		<div class="footer-icons">
-			<div class="footer-icons__img">
-				<img src="assets/home.svg" alt="" />
-			</div>
-			<div class="footer-icons__desc">홈</div>
-		</div>
-		<div class="footer-icons">
-			<div class="footer-icons__img">
-				<img src="assets/doc.svg" alt="" />
-			</div>
-			<div class="footer-icons__desc">동네생활</div>
-		</div>
-		<div class="footer-icons">
-			<div class="footer-icons__img">
-				<img src="assets/location.svg" alt="" />
-			</div>
-			<div class="footer-icons__desc">내 근처</div>
-		</div>
-		<div class="footer-icons">
-			<div class="footer-icons__img">
-				<img src="assets/chat.svg" alt="" />
-			</div>
-			<div class="footer-icons__desc">채팅</div>
-		</div>
-		<div class="footer-icons">
-			<div class="footer-icons__img">
-				<img src="assets/user.svg" alt="" />
-			</div>
-			<div class="footer-icons__desc">나의 당근</div>
-		</div>
-	</div>
-</footer>
+<Footer location="home" />
 <div class="media-info-msg">화면 사이즈를 줄여주세요.</div>
